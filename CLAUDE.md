@@ -73,10 +73,10 @@ Before writing Sprint 1+ code, these must be resolved with spike proofs:
 | H-04 | Scarlett 2i2 4th Gen USB PID `0x8215` is unverified |
 | H-06 | Audio spike prototype needed before Sprint 3 |
 
-Full details are in `keneth_frequency_arch.md` (§15 Development Issues Assessment) and the sprint plan `keneth_frequency_sprint_paln.md`.
+Full details are in `keneth_frequency_arch.md` (§15 Development Issues Assessment) and the sprint plan `keneth_frequency_sprint_plan.md`.
 
 ## Reference Documents
 
 - `keneth_frequency_arch.md` — Full architecture (1400+ lines): entities, signal flow, DSP pipeline, Swift integration, ADRs, testing strategy
 - `keneth_frequency_specs.md` — Technical specs: LC formulas, exciter coil design, Scarlett 2i2 interface, calibration procedure
-- `keneth_frequency_sprint_paln.md` — 13-sprint plan with issue resolutions and definitions of done
+- `keneth_frequency_sprint_plan.md` — 13-sprint plan with issue resolutions and definitions of done
