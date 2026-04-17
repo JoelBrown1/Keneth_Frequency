@@ -68,54 +68,56 @@ transform + custom tick labels. No external chart library change needed.
 
 ## Spike 3 — USB PID Verification (S0-11)
 
-**Status: PENDING — requires hardware**
+**Status: CONFIRMED — verified on hardware 2026-04-16**
 
-Connect the Scarlett 2i2 4th Gen via USB and run:
-```
-system_profiler SPUSBDataType | grep -A 10 "Scarlett"
-```
+Verified via `ioreg -p IOUSB` with Scarlett 2i2 4th Gen connected.
 
-Record the actual Vendor ID and Product ID here, and update the constants in
-`macos/Runner/CoreAudioSession.swift`:
-```swift
-private let kFocusriteVendorID: Int = 0x1235   // verify
-private let kScarlett2i2PID: Int = 0x8215       // verify — update if different
-```
+| Field | Expected (arch doc) | Actual |
+|-------|---------------------|--------|
+| Vendor ID | 0x1235 | **0x1235** ✓ |
+| Product ID | 0x8215 | **0x8219** — arch doc was wrong |
 
-**Expected (from arch doc §16):** VID `0x1235`, PID `0x8215`
+`macos/Runner/CoreAudioSession.swift` updated to `kScarlett2i2PID = 0x8219`.
+§16 of `keneth_frequency_arch.md` should be updated to reflect `0x8219`.
 
-| Field | Expected | Actual |
-|-------|----------|--------|
-| Vendor ID | 0x1235 | _TBD_ |
-| Product ID | 0x8215 | _TBD_ |
-
-Update §16 of `keneth_frequency_arch.md` once confirmed.
+**Issue H-04:** Resolved — PID is `0x8219`, not `0x8215`.
 
 ---
 
 ## Spike 4 — AVAudioEngine Channel Routing (S0-12 / S0-13)
 
-**Status: PENDING — requires hardware**
+**Status: CONFIRMED — verified on hardware 2026-04-16**
 
 **Objective:** Confirm that AVAudioEngine can route audio exclusively to Output 1
 (left channel) of the Scarlett 2i2 and simultaneously record from Input 1 (Hi-Z).
 
-**Day 1–3 (S0-12):** Write a minimal Swift standalone proof-of-concept
-(does not need to be inside the Flutter project) that:
-1. Opens an AVAudioEngine session on the Scarlett 2i2
-2. Generates a 1 kHz sine tone
-3. Plays it exclusively to Output bus 0 (Output 1)
+**Proof-of-concept:** `spikes/avaudiosession_spike/main.swift`
+Covers S0-12 and S0-13 in a single standalone Swift program. Compiles cleanly:
+```
+swiftc main.swift -o avaudiosession_spike
+```
 
-**Day 3–5 (S0-13):** Extend to simultaneously:
-1. Install a tap on the input node (Input bus 0)
-2. Record for 3 seconds
-3. Confirm captured samples are non-silence
+**To run (Scarlett 2i2 must be connected):**
+```
+cd spikes/avaudiosession_spike
+./avaudiosession_spike
+```
+With a loopback cable (Output 1 → Input 1) the program prints a PASS/FAIL result
+and the peak input amplitude captured over 3 seconds. No pickup required for routing
+verification — a loopback cable is sufficient.
+
+**What it verifies:**
+- S0-12: 1 kHz sine plays to AVAudioEngine output node bus 0 (Scarlett Output 1 / left)
+- S0-13: AVAudioEngine input node bus 0 (Scarlett Input 1 / Hi-Z) captures non-silence simultaneously
 
 **Channel mapping to verify:**
 - Output: AVAudioEngine output node, bus 0 → Scarlett Output 1 (left)
 - Input: AVAudioEngine input node, bus 0 → Scarlett Input 1 (Hi-Z)
 
-**Result:** _TBD — update with confirmed mapping or fallback decision_
+**Result:** PASS — peak amplitude 0.706671 captured on Input 1 with pickup connected.
 
-If AVAudioEngine channel routing fails, the fallback is PortAudio via FFI.
-Document which path was confirmed and update `CoreAudioSession.swift` accordingly.
+**Confirmed channel mapping:**
+- AVAudioEngine output node bus 0 → Scarlett Output 1 (left) ✓
+- AVAudioEngine input node bus 0 → Scarlett Input 1 (Hi-Z) ✓
+
+**Issue H-01:** Resolved — AVAudioEngine channel routing works as expected. No PortAudio fallback needed.

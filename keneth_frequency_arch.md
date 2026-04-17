@@ -201,7 +201,7 @@ The Swift native layer uses **AVAudioEngine** with **AVAudioUnit** wrapping the 
 
 **Scarlett 2i2 4th Gen device identification:**
 - USB Vendor ID: `0x1235` (Focusrite)
-- USB Product ID: `0x8215` (Scarlett 2i2 4th Gen)
+- USB Product ID: `0x8219` (Scarlett 2i2 4th Gen)
 - `scarlett_device_detector.dart` validates the correct interface is connected before allowing a session to open
 
 #### DSP Pipeline (`fft_processor.dart`)
@@ -758,7 +758,7 @@ class AudioChannel: NSObject {
 ### `CoreAudioSession.swift` — AVAudioEngine Setup
 
 Key responsibilities:
-- Enumerate CoreAudio devices and match the Scarlett 2i2 4th Gen by USB VID/PID (`0x1235` / `0x8215`)
+- Enumerate CoreAudio devices and match the Scarlett 2i2 4th Gen by USB VID/PID (`0x1235` / `0x8219`)
 - Set the audio device on `AVAudioEngine`'s input and output node explicitly
 - Route Output bus 0 (index 0) to the Scarlett's Output 1 (left channel)
 - Route Input bus 0 from the Scarlett's Input 1 (Hi-Z channel)
@@ -1175,13 +1175,13 @@ The architecture runs the DSP pipeline via `compute()`, which spawns a Dart Isol
 
 ---
 
-#### H-01: AVAudioEngine input channel mapping for USB audio is not guaranteed
+#### H-01: ~~AVAudioEngine input channel mapping unverified~~ — RESOLVED (2026-04-16)
 
-**Affects:** §16 Swift Native Layer — Sprint 3
+**Verified via Spike 4 (S0-12/S0-13)** with Scarlett 2i2 4th Gen and pickup connected:
+- `outputNode` bus 0 → Scarlett Output 1 (left) ✓
+- `inputNode` bus 0 → Scarlett Input 1 (Hi-Z) ✓ — peak amplitude 0.706671 (non-silence confirmed)
 
-The architecture assumes `inputNode` channel index 0 maps to Scarlett Input 1 (Hi-Z). AVAudioEngine channel indexing for multi-channel USB audio devices on macOS is not documented to match the front-panel channel numbering. If wrong, the pickup signal is silently captured on the wrong channel, producing noise or silence with no visible error.
-
-**Required fix:** Add a channel verification step in Sprint 3 — record a known signal on Input 1 and confirm it appears in channel index 0. Document the verified mapping explicitly.
+No PortAudio fallback needed. Channel index 0 maps correctly to front-panel channel 1 on this device.
 
 ---
 
@@ -1210,13 +1210,13 @@ The `SessionState` FSM has no `cancel` transition. On macOS, pressing Cmd+[ or a
 
 ---
 
-#### H-04: Scarlett USB Product ID `0x8215` is unverified and unsourced
+#### H-04: ~~Scarlett USB Product ID unverified~~ — RESOLVED (2026-04-16)
 
-**Affects:** §16 Swift Native Layer — Sprint 3
+**Verified via `ioreg -p IOUSB`** with Scarlett 2i2 4th Gen connected:
+- VID: `0x1235` (Focusrite) ✓
+- PID: `0x8219` ✓ (original arch doc had `0x8215` — incorrect)
 
-The USB PID `0x8215` for the Scarlett 2i2 4th Gen is stated as fact in §16 but is not cited. Focusrite has used different PIDs across generations and firmware versions. If incorrect, `scarlettDeviceDetector` will never match the connected device and the app will always show "device not found."
-
-**Required fix:** Verify using `system_profiler SPUSBDataType` on a Mac with the Scarlett 2i2 4th Gen connected before Sprint 3. Update §16 with the verified value and source.
+All references in §16 and `CoreAudioSession.swift` updated to `0x8219`.
 
 ---
 
@@ -1372,10 +1372,10 @@ All integration tests use synthetic PCM. A loopback cable (Output 1 → Input 1 
 | C-01 | Critical | pocketfft header-only — not callable from dart:ffi | Blocks Sprint 2 |
 | C-02 | Critical | 5 MB Base64 PCM over MethodChannel | Blocks Sprint 3 |
 | C-03 | Critical | dart:ffi pointers unsafe across Isolate boundaries | Blocks Sprint 2 |
-| H-01 | High | AVAudioEngine input channel mapping unverified | Sprint 3 |
+| H-01 | ~~High~~ | ~~AVAudioEngine channel mapping unverified~~ — **RESOLVED**: bus 0 = channel 1 confirmed | ✓ Done |
 | H-02 | High | FrequencyResponse JSON storage ~6.5 MB per row | Sprint 4 |
 | H-03 | High | No FSM cancel / back-navigation handling | Sprint 5 |
-| H-04 | High | USB PID 0x8215 unverified and unsourced | Sprint 3 |
+| H-04 | ~~High~~ | ~~USB PID unverified~~ — **RESOLVED**: PID = 0x8219 | ✓ Done |
 | H-05 | High | CI not set up until Sprint 10 | All sprints |
 | H-06 | High | No audio spike before Sprint 3 | Timeline |
 | M-01 | Medium | No sample rate negotiation with Scarlett | Sprint 3 |
