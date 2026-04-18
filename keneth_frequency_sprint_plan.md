@@ -43,7 +43,7 @@ This plan organises the Keneth Frequency Flutter application into 13 two-week sp
 | 3a | Swift Audio — Device & Session | 2 weeks | C-02 (partial), H-01, H-04, M-01, M-05 | ✅ DONE |
 | 3b | Swift Audio — Sweep & Record | 2 weeks | C-02 (complete), M-08 | ✅ DONE |
 | 4 | Storage & Calibration | 2 weeks | H-02 | ✅ DONE |
-| 5 | Application State | 2 weeks | H-03 | — |
+| 5 | Application State | 2 weeks | H-03 | ✅ DONE |
 | 6 | Core UI Screens | 2 weeks | M-02 | — |
 | 7 | Frequency Response Chart | 2 weeks | M-07 (confirmed) | — |
 | 8 | Supporting Screens | 2 weeks | M-06 | — |
@@ -343,7 +343,7 @@ This plan organises the Keneth Frequency Flutter application into 13 two-week sp
 
 ---
 
-## Sprint 5 — Application State
+## Sprint 5 — Application State ✅ COMPLETE
 
 **Goal:** Implement the Riverpod application layer — all providers, the session FSM, and GoRouter navigation. The FSM includes a `cancelSession()` path wired to GoRouter's `onExit` on all session screens.
 
