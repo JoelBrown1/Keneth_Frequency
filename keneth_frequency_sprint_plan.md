@@ -35,25 +35,25 @@ This plan organises the Keneth Frequency Flutter application into 13 two-week sp
 
 ## Sprint Summary
 
-| Sprint | Name | Duration | Issues Addressed |
-|---|---|---|---|
-| 0 | Foundation + Spikes | 2 weeks | H-04, H-05, H-06, C-01 (partial), M-07 |
-| 1 | Domain Layer | 2 weeks | M-03 |
-| 2 | DSP Pipeline | 2 weeks | C-01 (complete), C-03, M-04 |
-| 3a | Swift Audio — Device & Session | 2 weeks | C-02 (partial), H-01, H-04, M-01, M-05 |
-| 3b | Swift Audio — Sweep & Record | 2 weeks | C-02 (complete), M-08 |
-| 4 | Storage & Calibration | 2 weeks | H-02 |
-| 5 | Application State | 2 weeks | H-03 |
-| 6 | Core UI Screens | 2 weeks | M-02 |
-| 7 | Frequency Response Chart | 2 weeks | M-07 (confirmed) |
-| 8 | Supporting Screens | 2 weeks | M-06 |
-| 9 | Export, Error Handling & UX Review | 2 weeks | M-04, L-02 |
-| 10 | Testing & CI Completion | 2 weeks | L-03 |
-| 11 | Verification & Release | 2 weeks | L-01 |
+| Sprint | Name | Duration | Issues Addressed | Status |
+|---|---|---|---|---|
+| 0 | Foundation + Spikes | 2 weeks | H-04, H-05, H-06, C-01 (partial), M-07 | ✅ DONE |
+| 1 | Domain Layer | 2 weeks | M-03 | ✅ DONE |
+| 2 | DSP Pipeline | 2 weeks | C-01 (complete), C-03, M-04 | ✅ DONE |
+| 3a | Swift Audio — Device & Session | 2 weeks | C-02 (partial), H-01, H-04, M-01, M-05 | ✅ DONE |
+| 3b | Swift Audio — Sweep & Record | 2 weeks | C-02 (complete), M-08 | ✅ DONE |
+| 4 | Storage & Calibration | 2 weeks | H-02 | ✅ DONE |
+| 5 | Application State | 2 weeks | H-03 | — |
+| 6 | Core UI Screens | 2 weeks | M-02 | — |
+| 7 | Frequency Response Chart | 2 weeks | M-07 (confirmed) | — |
+| 8 | Supporting Screens | 2 weeks | M-06 | — |
+| 9 | Export, Error Handling & UX Review | 2 weeks | M-04, L-02 | — |
+| 10 | Testing & CI Completion | 2 weeks | L-03 | — |
+| 11 | Verification & Release | 2 weeks | L-01 | — |
 
 ---
 
-## Sprint 0 — Foundation + Spikes
+## Sprint 0 — Foundation + Spikes ✅ COMPLETE
 
 **Goal:** Establish a working, runnable Flutter macOS project with all dependencies installed and directory structure in place. Critically, run three technical spikes before any feature work begins: audio channel routing, pocketfft compilation, and fl_chart log axis feasibility. Configure CI from day one.
 
@@ -108,7 +108,7 @@ This plan organises the Keneth Frequency Flutter application into 13 two-week sp
 
 ---
 
-## Sprint 1 — Domain Layer
+## Sprint 1 — Domain Layer ✅ COMPLETE
 
 **Goal:** Implement the complete domain layer — all entities, enums, domain services, and reference data. No platform code. Fully unit-tested.
 
@@ -158,7 +158,7 @@ This plan organises the Keneth Frequency Flutter application into 13 two-week sp
 
 ---
 
-## Sprint 2 — DSP Pipeline
+## Sprint 2 — DSP Pipeline ✅ COMPLETE
 
 **Goal:** Implement the full post-recording DSP pipeline. The pocketfft `.dylib` compiled in Sprint 0 is wrapped in FFI bindings. The pipeline runs entirely within a single Dart Isolate — no native pointers cross Isolate boundaries. SNR validation is included.
 
@@ -208,7 +208,7 @@ This plan organises the Keneth Frequency Flutter application into 13 two-week sp
 
 ---
 
-## Sprint 3a — Swift Audio: Device & Session
+## Sprint 3a — Swift Audio: Device & Session ✅ COMPLETE
 
 **Goal:** Implement device enumeration, Scarlett 2i2 detection, and audio session open/close. The correct USB PID (verified in Sprint 0) is used. Sample rate negotiation is included. The channel mapping verified in Sprint 0 spike is applied.
 
@@ -258,7 +258,7 @@ This plan organises the Keneth Frequency Flutter application into 13 two-week sp
 
 ---
 
-## Sprint 3b — Swift Audio: Sweep & Record
+## Sprint 3b — Swift Audio: Sweep & Record ✅ COMPLETE
 
 **Goal:** Implement the synchronised sweep playback and input recording operation. PCM buffers are transferred as raw bytes via `BinaryCodec` — no Base64 encoding. The live RMS `EventChannel` is implemented.
 
@@ -298,7 +298,7 @@ This plan organises the Keneth Frequency Flutter application into 13 two-week sp
 
 ---
 
-## Sprint 4 — Storage & Calibration
+## Sprint 4 — Storage & Calibration ✅ COMPLETE
 
 **Goal:** Implement the persistence layer (Drift SQLite) and calibration flow. The `FrequencyResponse` storage format stores only the smoothed, downsampled curve — not the raw FFT output.
 
