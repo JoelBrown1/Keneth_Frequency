@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'application/session/session_notifier.dart';
 import 'application/session/session_state.dart';
 import 'ui/screens/calibration_screen.dart';
+import 'ui/screens/compare_screen.dart';
 import 'ui/theme/app_theme.dart';
 import 'ui/screens/dcr_entry_screen.dart';
 import 'ui/screens/home_screen.dart';
@@ -69,6 +70,13 @@ final _router = GoRouter(
       path: '/results/:id',
       builder: (context, routerState) =>
           ResultsScreen(measurementId: routerState.pathParameters['id']),
+    ),
+    GoRoute(
+      path: '/compare/:id1/:id2',
+      builder: (context, routerState) => CompareScreen(
+        id1: routerState.pathParameters['id1']!,
+        id2: routerState.pathParameters['id2']!,
+      ),
     ),
     GoRoute(
       path: '/reference',

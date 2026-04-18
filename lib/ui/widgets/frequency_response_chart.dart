@@ -82,6 +82,8 @@ double _logX(double hz) => math.log(hz) / math.ln10;
 /// [calibrationResponse] — optional reference curve rendered in grey.
 /// [qFactor] — used to draw the -3 dB bandwidth band when [response] is
 ///   too coarse to find the crossing automatically.
+/// [secondaryResponse] — optional second measurement for comparison mode.
+/// [secondaryResonantFrequency] — Hz; drives a second (amber) peak marker.
 class FrequencyResponseChart extends StatefulWidget {
   const FrequencyResponseChart({
     super.key,
@@ -89,12 +91,16 @@ class FrequencyResponseChart extends StatefulWidget {
     required this.resonantFrequency,
     this.calibrationResponse,
     this.qFactor,
+    this.secondaryResponse,
+    this.secondaryResonantFrequency,
   });
 
   final FrequencyResponse response;
   final double resonantFrequency;
   final FrequencyResponse? calibrationResponse;
   final double? qFactor;
+  final FrequencyResponse? secondaryResponse;
+  final double? secondaryResonantFrequency;
 
   @override
   State<FrequencyResponseChart> createState() => _FrequencyResponseChartState();
@@ -200,6 +206,12 @@ class _FrequencyResponseChartState extends State<FrequencyResponseChart> {
         .map((p) => FlSpot(_logX(p.frequency), p.magnitude))
         .toList();
 
+    // Secondary (comparison) spots.
+    final secSpots = widget.secondaryResponse?.points
+        .where((p) => p.frequency >= _minHz && p.frequency <= _maxHz)
+        .map((p) => FlSpot(_logX(p.frequency), p.magnitude))
+        .toList();
+
     // -3 dB bandwidth.
     final band =
         _findBandwidth(widget.response, widget.resonantFrequency);
@@ -207,6 +219,11 @@ class _FrequencyResponseChartState extends State<FrequencyResponseChart> {
     // Peak marker X value (clamped to view).
     final peakLogX = _logX(widget.resonantFrequency)
         .clamp(logMin, logMax);
+
+    // Secondary peak marker X value.
+    final secPeakLogX = widget.secondaryResonantFrequency != null
+        ? _logX(widget.secondaryResonantFrequency!).clamp(logMin, logMax)
+        : null;
 
     // Y-tick interval (auto ~5 or 10 dB steps).
     final ySpan = yMax - yMin;
@@ -338,8 +355,10 @@ class _FrequencyResponseChartState extends State<FrequencyResponseChart> {
                           ),
                         ),
 
-                        // -3 dB boundary lines (amber, dashed).
-                        if (band != null && band.fLow >= _minHz) ...[
+                        // -3 dB boundary lines (only when no comparison mode).
+                        if (band != null &&
+                            band.fLow >= _minHz &&
+                            secSpots == null) ...[
                           VerticalLine(
                             x: _logX(band.fLow).clamp(logMin, logMax),
                             color: AppTheme.secondary.withAlpha(160),
@@ -353,6 +372,26 @@ class _FrequencyResponseChartState extends State<FrequencyResponseChart> {
                             dashArray: [4, 4],
                           ),
                         ],
+
+                        // Secondary peak marker — amber dashed line.
+                        if (secPeakLogX != null)
+                          VerticalLine(
+                            x: secPeakLogX,
+                            color: AppTheme.secondary.withAlpha(200),
+                            strokeWidth: 1.5,
+                            dashArray: [6, 4],
+                            label: VerticalLineLabel(
+                              show: true,
+                              alignment: Alignment.topLeft,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: AppTheme.secondary,
+                                fontFamily: 'RobotoMono',
+                              ),
+                              labelResolver: (_) => formatHzLabel(
+                                  widget.secondaryResonantFrequency!),
+                            ),
+                          ),
                       ],
                     ),
                     lineBarsData: [
@@ -369,6 +408,21 @@ class _FrequencyResponseChartState extends State<FrequencyResponseChart> {
                           color: AppTheme.primary.withAlpha(20),
                         ),
                       ),
+
+                      // Secondary (comparison) response curve — amber.
+                      if (secSpots != null && secSpots.isNotEmpty)
+                        LineChartBarData(
+                          spots: secSpots,
+                          isCurved: true,
+                          curveSmoothness: 0.15,
+                          color: AppTheme.secondary,
+                          barWidth: 2,
+                          dotData: const FlDotData(show: false),
+                          belowBarData: BarAreaData(
+                            show: true,
+                            color: AppTheme.secondary.withAlpha(20),
+                          ),
+                        ),
 
                       // Calibration reference curve (grey, dashed).
                       if (calSpots != null && calSpots.isNotEmpty)

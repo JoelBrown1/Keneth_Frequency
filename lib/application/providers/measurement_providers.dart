@@ -28,6 +28,15 @@ PickupMeasurement? measurementResult(MeasurementResultRef ref) {
   };
 }
 
+/// A single measurement loaded by ID with **display-resolution** response
+/// (~1000 pts), suitable for chart rendering.
+///
+/// Returns `null` when the ID is not found.
+@riverpod
+Future<PickupMeasurement?> measurementById(
+    MeasurementByIdRef ref, String id) =>
+    ref.read(measurementRepositoryProvider).getById(id);
+
 /// Streams live RMS amplitude values from the Swift input tap during a sweep.
 ///
 /// Wraps [AudioServiceInterface.levelStream] as a Riverpod [StreamProvider].

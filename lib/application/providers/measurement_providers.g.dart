@@ -49,6 +49,187 @@ final measurementResultProvider =
 );
 
 typedef MeasurementResultRef = AutoDisposeProviderRef<PickupMeasurement?>;
+String _$measurementByIdHash() => r'86b6d44e167af64d83082621eb133b63460394c6';
+
+/// Copied from Dart SDK
+class _SystemHash {
+  _SystemHash._();
+
+  static int combine(int hash, int value) {
+    // ignore: parameter_assignments
+    hash = 0x1fffffff & (hash + value);
+    // ignore: parameter_assignments
+    hash = 0x1fffffff & (hash + ((0x0007ffff & hash) << 10));
+    return hash ^ (hash >> 6);
+  }
+
+  static int finish(int hash) {
+    // ignore: parameter_assignments
+    hash = 0x1fffffff & (hash + ((0x03ffffff & hash) << 3));
+    // ignore: parameter_assignments
+    hash = hash ^ (hash >> 11);
+    return 0x1fffffff & (hash + ((0x00003fff & hash) << 15));
+  }
+}
+
+/// A single measurement loaded by ID with **display-resolution** response
+/// (~1000 pts), suitable for chart rendering.
+///
+/// Returns `null` when the ID is not found.
+///
+/// Copied from [measurementById].
+@ProviderFor(measurementById)
+const measurementByIdProvider = MeasurementByIdFamily();
+
+/// A single measurement loaded by ID with **display-resolution** response
+/// (~1000 pts), suitable for chart rendering.
+///
+/// Returns `null` when the ID is not found.
+///
+/// Copied from [measurementById].
+class MeasurementByIdFamily extends Family<AsyncValue<PickupMeasurement?>> {
+  /// A single measurement loaded by ID with **display-resolution** response
+  /// (~1000 pts), suitable for chart rendering.
+  ///
+  /// Returns `null` when the ID is not found.
+  ///
+  /// Copied from [measurementById].
+  const MeasurementByIdFamily();
+
+  /// A single measurement loaded by ID with **display-resolution** response
+  /// (~1000 pts), suitable for chart rendering.
+  ///
+  /// Returns `null` when the ID is not found.
+  ///
+  /// Copied from [measurementById].
+  MeasurementByIdProvider call(
+    String id,
+  ) {
+    return MeasurementByIdProvider(
+      id,
+    );
+  }
+
+  @override
+  MeasurementByIdProvider getProviderOverride(
+    covariant MeasurementByIdProvider provider,
+  ) {
+    return call(
+      provider.id,
+    );
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'measurementByIdProvider';
+}
+
+/// A single measurement loaded by ID with **display-resolution** response
+/// (~1000 pts), suitable for chart rendering.
+///
+/// Returns `null` when the ID is not found.
+///
+/// Copied from [measurementById].
+class MeasurementByIdProvider
+    extends AutoDisposeFutureProvider<PickupMeasurement?> {
+  /// A single measurement loaded by ID with **display-resolution** response
+  /// (~1000 pts), suitable for chart rendering.
+  ///
+  /// Returns `null` when the ID is not found.
+  ///
+  /// Copied from [measurementById].
+  MeasurementByIdProvider(
+    String id,
+  ) : this._internal(
+          (ref) => measurementById(
+            ref as MeasurementByIdRef,
+            id,
+          ),
+          from: measurementByIdProvider,
+          name: r'measurementByIdProvider',
+          debugGetCreateSourceHash:
+              const bool.fromEnvironment('dart.vm.product')
+                  ? null
+                  : _$measurementByIdHash,
+          dependencies: MeasurementByIdFamily._dependencies,
+          allTransitiveDependencies:
+              MeasurementByIdFamily._allTransitiveDependencies,
+          id: id,
+        );
+
+  MeasurementByIdProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.id,
+  }) : super.internal();
+
+  final String id;
+
+  @override
+  Override overrideWith(
+    FutureOr<PickupMeasurement?> Function(MeasurementByIdRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: MeasurementByIdProvider._internal(
+        (ref) => create(ref as MeasurementByIdRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        id: id,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeFutureProviderElement<PickupMeasurement?> createElement() {
+    return _MeasurementByIdProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is MeasurementByIdProvider && other.id == id;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, id.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+mixin MeasurementByIdRef on AutoDisposeFutureProviderRef<PickupMeasurement?> {
+  /// The parameter `id` of this provider.
+  String get id;
+}
+
+class _MeasurementByIdProviderElement
+    extends AutoDisposeFutureProviderElement<PickupMeasurement?>
+    with MeasurementByIdRef {
+  _MeasurementByIdProviderElement(super.provider);
+
+  @override
+  String get id => (origin as MeasurementByIdProvider).id;
+}
+
 String _$levelStreamHash() => r'a6f9b1f26152234708a0255b88f5c616eb17738b';
 
 /// Streams live RMS amplitude values from the Swift input tap during a sweep.
