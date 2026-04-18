@@ -485,7 +485,7 @@ This plan organises the Keneth Frequency Flutter application into 13 two-week sp
 
 ---
 
-## Sprint 8 — Supporting Screens
+## Sprint 8 — Supporting Screens ✅ COMPLETE
 
 **Goal:** Implement the Pickup Library reference screen, Settings screen, and Comparison feature. Comparison uses a right-click context menu — not long-press — consistent with macOS desktop conventions.
 
