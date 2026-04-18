@@ -21,8 +21,18 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Generate code (Riverpod + Drift)
+        run: dart run build_runner build --delete-conflicting-outputs
+
       - name: Run tests
         run: flutter test
+        # Includes:
+        #   - S10-05: synthetic_sh4_pipeline_test.dart (SH-4 peak within ±50 Hz — DoD)
+        #   - export_service_test.dart, export_round_trip_test.dart
+        #   - screens_sprint10_test.dart (all session screens)
+        #   - All prior sprint tests (194 baseline)
+        # Note: pocketfft dylib-dependent tests skip automatically when
+        #       libpocketfft.dylib is absent (no native build step in CI).
 
   build:
     name: Build macOS
@@ -38,6 +48,9 @@ jobs:
 
       - name: Install dependencies
         run: flutter pub get
+
+      - name: Generate code (Riverpod + Drift)
+        run: dart run build_runner build --delete-conflicting-outputs
 
       - name: Build macOS release
         run: flutter build macos --release

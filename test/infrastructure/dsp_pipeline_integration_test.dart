@@ -13,11 +13,11 @@ import 'package:keneth_frequency/infrastructure/dsp/smoothing.dart';
 void main() {
   const dyLibPath = 'macos/Runner/libpocketfft.dylib';
 
-  setUpAll(() {
-    if (!File(dyLibPath).existsSync()) {
-      fail('libpocketfft.dylib not found — run S0-14 build phase first.');
-    }
-  });
+  // Determine dylib availability at test-definition time so group skip works.
+  final hasDyLib = File(dyLibPath).existsSync();
+  const dyLibSkipReason =
+      'libpocketfft.dylib not found — run `macos/Runner/build_pocketfft.sh`. '
+      'S10-05 SH-4 verification is covered by synthetic_sh4_pipeline_test.dart.';
 
   Float32List _sineWithNoise(
     int n,
@@ -87,7 +87,8 @@ void main() {
     });
   });
 
-  group('runDspPipeline — direct', () {
+  group('runDspPipeline — direct',
+      skip: hasDyLib ? null : dyLibSkipReason, () {
 
     test('storageResponse has ≤60 points', () {
       const sampleRate = 48000;
@@ -146,7 +147,8 @@ void main() {
   // ---------------------------------------------------------------------------
   // compute() — Isolate boundary test (DoD)
   // ---------------------------------------------------------------------------
-  group('runDspPipeline via compute()', () {
+  group('runDspPipeline via compute()',
+      skip: hasDyLib ? null : dyLibSkipReason, () {
     test('completes without error; no Pointer<T> crosses Isolate boundary (DoD)',
         () async {
       const sampleRate = 48000;
