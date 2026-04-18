@@ -44,10 +44,10 @@ This plan organises the Keneth Frequency Flutter application into 13 two-week sp
 | 3b | Swift Audio — Sweep & Record | 2 weeks | C-02 (complete), M-08 | ✅ DONE |
 | 4 | Storage & Calibration | 2 weeks | H-02 | ✅ DONE |
 | 5 | Application State | 2 weeks | H-03 | ✅ DONE |
-| 6 | Core UI Screens | 2 weeks | M-02 | — |
-| 7 | Frequency Response Chart | 2 weeks | M-07 (confirmed) | — |
-| 8 | Supporting Screens | 2 weeks | M-06 | — |
-| 9 | Export, Error Handling & UX Review | 2 weeks | M-04, L-02 | — |
+| 6 | Core UI Screens | 2 weeks | M-02 | ✅ DONE |
+| 7 | Frequency Response Chart | 2 weeks | M-07 (confirmed) | ✅ DONE |
+| 8 | Supporting Screens | 2 weeks | M-06 | ✅ DONE |
+| 9 | Export, Error Handling & UX Review | 2 weeks | M-04, L-02 | ✅ DONE |
 | 10 | Testing & CI Completion | 2 weeks | L-03 | — |
 | 11 | Verification & Release | 2 weeks | L-01 | — |
 
@@ -576,6 +576,8 @@ This plan organises the Keneth Frequency Flutter application into 13 two-week sp
 - SNR warning surfaces correctly in UI
 - Export file named `keneth_[pickup_name]_[timestamp].[ext]`
 - `UX_REVIEW.md` written with findings and P1 issues resolved
+
+**✅ COMPLETE** — 194 tests passing. ExportService toCsv/toJson implemented; export button on ResultsScreen; SNR, clip, uncalibrated, and no-peak banners in ResultsScreen; stale/missing calibration banner and device-not-found banner in CalibrationScreen; DeviceNotFoundScreen; `/error/device-not-found` route; UX review completed with 3 P1 issues resolved (UX-01, UX-02, UX-03).
 
 ---
 

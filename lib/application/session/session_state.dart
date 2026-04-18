@@ -62,7 +62,22 @@ class ProcessingState extends SessionState {
 
 /// Processing complete; results are available for display and saving.
 class ResultsState extends SessionState {
-  const ResultsState({required this.measurement});
+  const ResultsState({
+    required this.measurement,
+    this.snrDb,
+    this.clipWarning = false,
+    this.noPeakDetected = false,
+  });
 
   final PickupMeasurement measurement;
+
+  /// SNR in dB computed by [SignalValidator.checkSnr].
+  /// When below 10.0 dB the UI shows a low-SNR warning banner (M-04).
+  final double? snrDb;
+
+  /// True when the recorder detected clipping (any sample ≥ 0.98 FS).
+  final bool clipWarning;
+
+  /// True when [PeakDetector] found no resonant peak in the response.
+  final bool noPeakDetected;
 }

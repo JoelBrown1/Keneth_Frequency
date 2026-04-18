@@ -195,7 +195,9 @@ class DcrInputFormState extends State<DcrInputForm> {
         const SizedBox(height: 16),
 
         // Live corrected DCR display (M-02).
-        _CorrectedDcrRow(correctedDcr: _correctedDcr),
+        // Only shown once the user has entered a DCR value (UX-01).
+        if (_dcrController.text.isNotEmpty)
+          _CorrectedDcrRow(correctedDcr: _correctedDcr),
       ],
     );
   }

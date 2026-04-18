@@ -148,7 +148,7 @@ void main() {
   // ── DcrInputForm — S6-16: corrected DCR live update ──────────────────────
 
   group('DcrInputForm — S6-16 corrected DCR live update', () {
-    testWidgets('corrected DCR display shows — when field is empty',
+    testWidgets('corrected DCR row is hidden when DCR field is empty',
         (tester) async {
       await tester.pumpWidget(
         _wrap(DcrInputForm(
@@ -157,11 +157,11 @@ void main() {
         )),
       );
 
+      // UX-01: row is hidden until user types a value.
       expect(
         find.byKey(const Key('corrected_dcr_value')),
-        findsOneWidget,
+        findsNothing,
       );
-      expect(find.text('— Ω'), findsOneWidget);
     });
 
     testWidgets('corrected DCR updates when DCR is entered at 20 °C',

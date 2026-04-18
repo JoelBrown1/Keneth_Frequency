@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../application/providers/audio_device_provider.dart';
+import '../../application/providers/calibration_provider.dart';
 import '../../application/session/session_notifier.dart';
 import '../../application/session/session_state.dart';
 import '../theme/app_theme.dart';
@@ -14,6 +16,13 @@ class CalibrationScreen extends ConsumerWidget {
     final session = ref.watch(sessionNotifierProvider);
     final progress = session is CalibratingState ? session.progress : 0.0;
     final isRunning = progress > 0;
+
+    // Check for Scarlett device (UX-02): disable start button when none found.
+    final devicesAsync = ref.watch(audioDevicesProvider);
+    final hasDevice = devicesAsync.whenOrNull(
+          data: (list) => list.any((d) => d.isScarlett),
+        ) ??
+        true; // assume present while loading to avoid premature disable
 
     return Scaffold(
       appBar: AppBar(
@@ -32,6 +41,17 @@ class CalibrationScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Device-not-found warning (UX-02 / S9-05).
+                  if (!hasDevice)
+                    _DeviceNotFoundBanner(),
+
+                  const SizedBox(height: 8),
+
+                  // Stale or missing calibration warning (S9-07).
+                  _StaleCalibrationBanner(),
+
+                  const SizedBox(height: 8),
+
                   // Focusrite reminder.
                   _InfoCard(
                     icon: Icons.usb,
@@ -92,7 +112,8 @@ class CalibrationScreen extends ConsumerWidget {
           ),
           _BottomBar(
             isRunning: isRunning,
-            onStart: isRunning
+            deviceReady: hasDevice,
+            onStart: (isRunning || !hasDevice)
                 ? null
                 : () => ref
                     .read(sessionNotifierProvider.notifier)
@@ -100,6 +121,73 @@ class CalibrationScreen extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Shows a red banner when no Scarlett device is detected (UX-02 / S9-05).
+class _DeviceNotFoundBanner extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppTheme.error.withAlpha(30),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: AppTheme.error.withAlpha(80)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.usb_off, color: AppTheme.error, size: 18),
+          const SizedBox(width: 8),
+          const Expanded(
+            child: Text(
+              'Scarlett 2i2 not detected. Check USB connection and power.',
+              style: TextStyle(color: AppTheme.error, fontSize: 13),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Shows an amber banner if calibration is stale or missing (S9-07).
+class _StaleCalibrationBanner extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final status = ref.watch(calibrationStatusProvider);
+    return status.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (s) {
+        if (!s.isStale) return const SizedBox.shrink();
+        final msg = s.latest == null
+            ? 'No calibration found. Run calibration before measuring for accurate results.'
+            : 'Calibration is older than the configured threshold. Consider re-calibrating.';
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: AppTheme.secondary.withAlpha(30),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: AppTheme.secondary.withAlpha(80)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.warning_amber_rounded,
+                  color: AppTheme.secondary, size: 18),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(msg,
+                    style: const TextStyle(
+                        color: AppTheme.secondary, fontSize: 13)),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -142,9 +230,14 @@ class _InfoCard extends StatelessWidget {
 }
 
 class _BottomBar extends StatelessWidget {
-  const _BottomBar({required this.isRunning, required this.onStart});
+  const _BottomBar({
+    required this.isRunning,
+    required this.deviceReady,
+    required this.onStart,
+  });
 
   final bool isRunning;
+  final bool deviceReady;
   final VoidCallback? onStart;
 
   @override
