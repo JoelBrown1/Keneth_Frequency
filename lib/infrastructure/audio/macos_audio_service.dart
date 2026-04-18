@@ -9,16 +9,20 @@ import 'audio_service_interface.dart';
 ///
 /// Communicates with the Swift [AudioChannel] over a [MethodChannel] using
 /// the default [StandardMethodCodec]. Native Maps and primitives pass through
-/// with no manual encoding for Sprint 3a. Sprint 3b will pass raw PCM as
-/// [Uint8List] / [Float32List] — transferred as [FlutterStandardTypedData]
-/// without Base64 overhead (issue C-02).
+/// with no manual encoding for Sprint 3a methods.
+///
+/// Sprint 3b (sweep + record): [Float32List] is transferred as
+/// [FlutterStandardTypedData(float32:)] — raw bytes, no Base64 (issue C-02).
 class MacosAudioService implements AudioServiceInterface {
   static const _channelName = 'keneth_frequency/audio';
+  static const _levelChannelName = 'keneth_frequency/level';
 
-  // StandardMethodCodec is the default — no explicit codec argument needed.
   final MethodChannel _channel;
+  final EventChannel _levelChannel;
 
-  MacosAudioService() : _channel = const MethodChannel(_channelName);
+  MacosAudioService()
+      : _channel = const MethodChannel(_channelName),
+        _levelChannel = const EventChannel(_levelChannelName);
 
   // ── getDevices ──────────────────────────────────────────────────────────────
 
@@ -33,14 +37,13 @@ class MacosAudioService implements AudioServiceInterface {
   // ── openSession ─────────────────────────────────────────────────────────────
 
   @override
-  Future<dynamic> openSession(String deviceId, double sampleRate) async {
+  Future<dynamic> openSession(String deviceId, double sampleRate) {
     return _channel.invokeMethod<dynamic>('openSession', {
       'deviceId': deviceId,
       'sampleRate': sampleRate,
     });
     // Swift returns: true (Bool) | false (Bool) | String (error message).
-    // StandardMethodCodec preserves the type; callers check `result is bool`
-    // vs `result is String`.
+    // StandardMethodCodec preserves the runtime type.
   }
 
   // ── closeSession ─────────────────────────────────────────────────────────────
@@ -48,14 +51,31 @@ class MacosAudioService implements AudioServiceInterface {
   @override
   Future<void> closeSession() => _channel.invokeMethod<void>('closeSession');
 
-  // ── playSweepAndRecord (Sprint 3b stub) ──────────────────────────────────────
+  // ── playSweepAndRecord ───────────────────────────────────────────────────────
 
   @override
   Future<Float32List> playSweepAndRecord(
     Float32List sweepSamples,
     int outputChannel,
     int inputChannel,
-  ) {
-    throw UnimplementedError('playSweepAndRecord is implemented in Sprint 3b');
+  ) async {
+    // Float32List is encoded by StandardMethodCodec as FlutterStandardTypedData
+    // (float32) — raw bytes, no Base64 (issue C-02).
+    final result = await _channel.invokeMethod<dynamic>('playSweepAndRecord', {
+      'sweep': sweepSamples,
+      'outputChannel': outputChannel,
+      'inputChannel': inputChannel,
+    });
+    // Swift returns FlutterStandardTypedData(float32:) → Dart receives Float32List.
+    return result as Float32List;
+  }
+
+  // ── levelStream ──────────────────────────────────────────────────────────────
+
+  @override
+  Stream<double> get levelStream {
+    return _levelChannel
+        .receiveBroadcastStream()
+        .map((event) => (event as num).toDouble());
   }
 }

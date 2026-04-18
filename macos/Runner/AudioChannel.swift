@@ -10,31 +10,40 @@ import Foundation
 ///
 /// Method names and payload shapes
 /// ─────────────────────────────────────────────────────────────────────────
-/// getDevices   → no args  → [[String: Any]]  (array of device dicts)
-/// openSession  → ["deviceId": String, "sampleRate": Double]
-///              → true | false | String (error message)
-/// closeSession → no args  → nil
+/// getDevices        → no args
+///                  → [[String: Any]]
+/// openSession       → ["deviceId": String, "sampleRate": Double]
+///                  → true | false | String (error message)
+/// closeSession      → no args → nil
+/// playSweepAndRecord → ["sweep": Float32TypedData, "outputChannel": Int,
+///                       "inputChannel": Int]
+///                  → Float32TypedData (recorded samples)
+///
+/// EventChannel "keneth_frequency/level" streams Double RMS values
+/// once per 4096-sample tap buffer during an active playSweepAndRecord call.
 /// ─────────────────────────────────────────────────────────────────────────
 class AudioChannel {
   static let channelName = "keneth_frequency/audio"
   static let levelChannelName = "keneth_frequency/level"
 
   private let methodChannel: FlutterMethodChannel
+  private let levelEventChannel: FlutterEventChannel
+  private let levelHandler = LevelStreamHandler()
   private let session = CoreAudioSession()
 
   init(messenger: FlutterBinaryMessenger) {
-    // Default codec = FlutterStandardMethodCodec — no explicit argument needed.
     methodChannel = FlutterMethodChannel(
       name: AudioChannel.channelName,
       binaryMessenger: messenger
     )
-    methodChannel.setMethodCallHandler(handle)
 
-    // EventChannel for live RMS (Sprint 3b) — registered now, handler set in 3b.
-    _ = FlutterEventChannel(
+    levelEventChannel = FlutterEventChannel(
       name: AudioChannel.levelChannelName,
       binaryMessenger: messenger
     )
+    levelEventChannel.setStreamHandler(levelHandler)
+
+    methodChannel.setMethodCallHandler(handle)
   }
 
   // MARK: - Method handler
@@ -48,6 +57,8 @@ class AudioChannel {
     case "closeSession":
       session.close()
       result(nil)
+    case "playSweepAndRecord":
+      handlePlaySweepAndRecord(call: call, result: result)
     default:
       result(FlutterMethodNotImplemented)
     }
@@ -64,9 +75,65 @@ class AudioChannel {
                           details: nil))
       return
     }
+    result(session.open(deviceId: deviceId, sampleRate: sampleRate))
+  }
 
-    let openResult = session.open(deviceId: deviceId, sampleRate: sampleRate)
-    // CoreAudioSession.open() returns: true | false | String
-    result(openResult)
+  private func handlePlaySweepAndRecord(call: FlutterMethodCall, result: @escaping FlutterResult) {
+    guard let args = call.arguments as? [String: Any],
+          let sweepData = args["sweep"] as? FlutterStandardTypedData,
+          let outCh = args["outputChannel"] as? Int,
+          let inCh  = args["inputChannel"]  as? Int else {
+      result(FlutterError(code: "INVALID_ARGS",
+                          message: "playSweepAndRecord requires sweep (Float32 typed data), outputChannel and inputChannel",
+                          details: nil))
+      return
+    }
+
+    // Reinterpret the raw bytes as Float32.
+    let sweepFloats: [Float] = sweepData.data.withUnsafeBytes { ptr in
+      Array(ptr.bindMemory(to: Float.self))
+    }
+
+    // Capture sink reference before entering the Task.
+    let sink = levelHandler.sink
+
+    Task {
+      do {
+        let recording = try await session.playSweepAndRecord(
+          sweepSamples: sweepFloats,
+          outputChannel: outCh,
+          inputChannel: inCh,
+          onRms: { rms in sink?(rms) }
+        )
+        // Encode [Float] → Data → FlutterStandardTypedData(float32:)
+        let data = recording.withUnsafeBufferPointer { ptr in
+          Data(buffer: ptr)
+        }
+        result(FlutterStandardTypedData(float32: data))
+      } catch {
+        result(FlutterError(code: "AUDIO_ERROR",
+                            message: error.localizedDescription,
+                            details: nil))
+      }
+    }
+  }
+}
+
+// MARK: - Level stream handler
+
+/// Receives listen/cancel events from the Dart EventChannel and
+/// exposes the current [FlutterEventSink] for the tap callback.
+private class LevelStreamHandler: NSObject, FlutterStreamHandler {
+  var sink: FlutterEventSink?
+
+  func onListen(withArguments arguments: Any?,
+                eventSink events: @escaping FlutterEventSink) -> FlutterError? {
+    sink = events
+    return nil
+  }
+
+  func onCancel(withArguments arguments: Any?) -> FlutterError? {
+    sink = nil
+    return nil
   }
 }

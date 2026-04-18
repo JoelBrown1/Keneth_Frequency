@@ -21,13 +21,19 @@ abstract class AudioServiceInterface {
   /// Stops the engine and releases all audio resources.
   Future<void> closeSession();
 
-  /// Plays the log-chirp sweep on output channel 0 and simultaneously records
-  /// from input channel 0. Returns the captured PCM as a [Float32List].
+  /// Plays the log-chirp sweep on [outputChannel] and simultaneously records
+  /// from [inputChannel]. Returns the captured PCM as a [Float32List].
   ///
-  /// Declared here for completeness; implemented in Sprint 3b.
+  /// The sweep is transferred as raw Float32 bytes — no Base64 encoding (C-02).
   Future<Float32List> playSweepAndRecord(
     Float32List sweepSamples,
     int outputChannel,
     int inputChannel,
   );
+
+  /// Broadcasts the linear RMS amplitude (0–1) once per 4096-sample tap buffer
+  /// during an active [playSweepAndRecord] call.
+  ///
+  /// Wraps the `keneth_frequency/level` EventChannel.
+  Stream<double> get levelStream;
 }
