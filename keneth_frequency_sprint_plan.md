@@ -442,7 +442,7 @@ This plan organises the Keneth Frequency Flutter application into 13 two-week sp
 
 ---
 
-## Sprint 7 — Frequency Response Chart
+## Sprint 7 — Frequency Response Chart ✅ COMPLETE
 
 **Goal:** Implement the `FrequencyResponseChart` widget using the approach confirmed in the Sprint 0 log axis spike. Replace the ResultsScreen placeholder.
 
