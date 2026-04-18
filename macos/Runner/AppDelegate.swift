@@ -3,6 +3,9 @@ import FlutterMacOS
 
 @main
 class AppDelegate: FlutterAppDelegate {
+  /// Strong reference — prevents ARC from releasing the AudioChannel and its handler.
+  var audioChannel: AudioChannel?
+
   override func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
     return true
   }
@@ -11,9 +14,9 @@ class AppDelegate: FlutterAppDelegate {
     return true
   }
 
-  override func applicationDidFinishLaunching(_ notification: Notification) {
-    // Register audio MethodChannel and EventChannel (Sprint 3a)
-    // AudioChannel.register(with: registrar(forPlugin: "AudioChannel"))
-    super.applicationDidFinishLaunching(notification)
+  /// Called from MainFlutterWindow.awakeFromNib() once the FlutterViewController
+  /// and its binary messenger are ready.
+  func setupAudioChannel(messenger: FlutterBinaryMessenger) {
+    audioChannel = AudioChannel(messenger: messenger)
   }
 }
