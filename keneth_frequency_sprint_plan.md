@@ -390,7 +390,7 @@ This plan organises the Keneth Frequency Flutter application into 13 two-week sp
 
 ---
 
-## Sprint 6 — Core UI Screens
+## Sprint 6 — Core UI Screens ✅ COMPLETE
 
 **Goal:** Implement all screens in the primary measurement flow. The DCR Entry screen computes and displays temperature-corrected DCR alongside the raw reading.
 
