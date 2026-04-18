@@ -7,6 +7,7 @@ import '../../application/session/session_notifier.dart';
 import '../../application/session/session_state.dart';
 import '../../domain/entities/pickup_measurement.dart';
 import '../theme/app_theme.dart';
+import '../widgets/frequency_response_chart.dart';
 import '../widgets/pickup_type_selector.dart'; // provides PickupTypeDisplay extension
 import '../widgets/session_progress_bar.dart';
 
@@ -200,18 +201,14 @@ class _ResultsView extends StatelessWidget {
 
                   const SizedBox(height: 16),
 
-                  // Chart placeholder (Sprint 8).
-                  Container(
-                    height: 180,
-                    decoration: BoxDecoration(
-                      color: AppTheme.surfaceVariant,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Center(
-                      child: Text(
-                        'Frequency response chart — Sprint 8',
-                        style: TextStyle(color: AppTheme.onSurfaceDim, fontSize: 13),
-                      ),
+                  // Frequency response chart.
+                  SizedBox(
+                    height: 260,
+                    child: FrequencyResponseChart(
+                      key: const Key('frequency_response_chart'),
+                      response: measurement.response,
+                      resonantFrequency: measurement.resonantFrequency,
+                      qFactor: measurement.qFactor,
                     ),
                   ),
 
