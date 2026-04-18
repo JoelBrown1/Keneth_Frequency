@@ -27,3 +27,11 @@ PickupMeasurement? measurementResult(MeasurementResultRef ref) {
     _ => null,
   };
 }
+
+/// Streams live RMS amplitude values from the Swift input tap during a sweep.
+///
+/// Wraps [AudioServiceInterface.levelStream] as a Riverpod [StreamProvider].
+/// Consumers receive [AsyncValue<double>] — data = current linear RMS (0–1).
+@riverpod
+Stream<double> levelStream(LevelStreamRef ref) =>
+    ref.read(audioServiceProvider).levelStream;

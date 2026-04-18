@@ -49,5 +49,24 @@ final measurementResultProvider =
 );
 
 typedef MeasurementResultRef = AutoDisposeProviderRef<PickupMeasurement?>;
+String _$levelStreamHash() => r'a6f9b1f26152234708a0255b88f5c616eb17738b';
+
+/// Streams live RMS amplitude values from the Swift input tap during a sweep.
+///
+/// Wraps [AudioServiceInterface.levelStream] as a Riverpod [StreamProvider].
+/// Consumers receive [AsyncValue<double>] — data = current linear RMS (0–1).
+///
+/// Copied from [levelStream].
+@ProviderFor(levelStream)
+final levelStreamProvider = AutoDisposeStreamProvider<double>.internal(
+  levelStream,
+  name: r'levelStreamProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product') ? null : _$levelStreamHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef LevelStreamRef = AutoDisposeStreamProviderRef<double>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

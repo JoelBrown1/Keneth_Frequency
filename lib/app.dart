@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'application/session/session_notifier.dart';
 import 'application/session/session_state.dart';
 import 'ui/screens/calibration_screen.dart';
+import 'ui/theme/app_theme.dart';
 import 'ui/screens/dcr_entry_screen.dart';
 import 'ui/screens/home_screen.dart';
 import 'ui/screens/measurement_screen.dart';
@@ -89,7 +90,7 @@ class KenethFrequencyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp.router(
       title: 'Keneth Frequency',
-      theme: ThemeData.dark(),
+      theme: AppTheme.dark,
       routerConfig: _router,
       builder: (context, child) =>
           _NavigationBridge(router: _router, child: child ?? const SizedBox()),

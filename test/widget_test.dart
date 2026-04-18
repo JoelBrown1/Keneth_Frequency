@@ -1,11 +1,10 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keneth_frequency/app.dart';
+import 'package:keneth_frequency/application/providers/database_providers.dart';
 import 'package:keneth_frequency/application/settings/settings_notifier.dart';
 import 'package:keneth_frequency/infrastructure/storage/app_database.dart';
-import 'package:keneth_frequency/infrastructure/storage/app_database.dart'
-    show appDatabaseProvider;
-import 'package:keneth_frequency/application/providers/database_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -25,8 +24,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    // HomeScreen stub renders this text (Sprint 6 implements the real screen).
-    expect(find.text('Home — Sprint 6: not yet implemented'), findsOneWidget);
+    // HomeScreen should render the app bar title and New Measurement button.
+    expect(find.text('Keneth Frequency'), findsOneWidget);
+    expect(find.byKey(const Key('new_measurement_button')), findsOneWidget);
 
     await db.close();
   });
