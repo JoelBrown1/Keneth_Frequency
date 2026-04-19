@@ -84,6 +84,8 @@ class _FixedSession extends Notifier<SessionState>
   @override void saveResult() {}
   @override void reset() {}
   @override Future<void> cancelSession() async {}
+  @override Future<void> runCalibration() async {}
+  @override Future<void> runMeasurement() async {}
   @override PickupType get accumulatedType => PickupType.humbuckerMediumOutput;
   @override String get accumulatedPickupName => 'Test';
   @override double get accumulatedDcr => 0;

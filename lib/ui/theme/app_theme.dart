@@ -105,6 +105,13 @@ class AppTheme {
           letterSpacing: 0.5,
         ),
       ),
+      // UX-08: ensure all icon buttons (including AppBar back button) have a
+      // minimum 44×44 px touch target.
+      iconButtonTheme: IconButtonThemeData(
+        style: ButtonStyle(
+          minimumSize: WidgetStateProperty.all(const Size(44, 44)),
+        ),
+      ),
       cardTheme: const CardThemeData(
         color: surface,
         elevation: 0,

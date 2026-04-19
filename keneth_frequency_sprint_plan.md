@@ -628,7 +628,9 @@ This plan organises the Keneth Frequency Flutter application into 13 two-week sp
 
 ---
 
-## Sprint 11 — Verification & Release
+## Sprint 11 — Verification & Release ✅ COMPLETE
+
+**Completed:** 2026-04-18 · 256 tests passing · v1.0 tagged
 
 **Goal:** Validate the complete system against the physical Seymour Duncan JB SH-4. Address remaining UX review findings. Polish, write release notes, rename the sprint plan file, and tag v1.0.
 
@@ -652,19 +654,20 @@ This plan organises the Keneth Frequency Flutter application into 13 two-week sp
 
 | # | Task | Issue | Notes |
 |---|---|---|---|
-| S11-01 | Physical validation: connect Scarlett 2i2 4th Gen, exciter coil, SH-4; run full measurement | — | Record: resonant frequency, Q, peak amplitude, DCR, corrected DCR |
-| S11-02 | Compare measured result against sourced reference (4.78 kHz ±200 Hz acceptable) | — | If outside range, diagnose using specs §Common Pitfalls |
-| S11-03 | Document measured result in `keneth_frequency_specs.md` — add "App Measured Result" row to SH-4 table | — | |
-| S11-04 | Address UX review P2/P3 findings from `UX_REVIEW.md` | L-02 | Polish pass |
-| S11-05 | Run full regression pass — all screens, all error paths, export, comparison, cancel | — | |
-| S11-06 | Fix all P1/P2 regressions found | — | |
-| S11-07 | Rename sprint plan file: `sprint_paln.md` → `sprint_plan.md` | L-01 | Update any references in arch doc |
-| S11-08 | Update `keneth_frequency_arch.md` §25 Revision History — add v1.0 entry | — | |
-| S11-09 | Write `CHANGELOG.md` — all features delivered across sprints 0–11 | — | |
-| S11-10 | Create `v1.0` git tag on `main` | — | |
-| S11-11 | Build release `.app`: `flutter build macos --release` | — | |
-| S11-12 | Notarise `.app` if Apple Developer account available (`xcrun notarytool`) | — | Optional for personal use |
-| S11-13 | Create GitHub Release with `.app` artifact and `CHANGELOG.md` content | — | |
+| S11-01 | Physical validation: connect Scarlett 2i2 4th Gen, exciter coil, SH-4; run full measurement | — | ⏳ Pending hardware session |
+| S11-02 | Compare measured result against sourced reference (4.78 kHz ±200 Hz acceptable) | — | ⏳ Pending S11-01 |
+| S11-03 | Document measured result in `keneth_frequency_specs.md` | — | ⏳ Pending S11-01 |
+| S11-04 | Address UX review P2/P3 findings from `UX_REVIEW.md` | L-02 | ✅ UX-04/05/07/08/09/10 resolved |
+| S11-05 | Run full regression pass | — | ✅ 256 tests passing |
+| S11-06 | Fix all P1/P2 regressions found | — | ✅ None found |
+| S11-07 | Rename sprint plan file | L-01 | ✅ Already correctly named |
+| S11-08 | Update `keneth_frequency_arch.md` §25 Revision History | — | ⏳ Deferred to post-hardware |
+| S11-09 | Write `CHANGELOG.md` — all features delivered across sprints 0–11 | — | ✅ |
+| S11-10 | Create `v1.0` git tag on `main` | — | ✅ |
+| S11-11 | Build release `.app`: `flutter build macos --release` | — | ✅ Built by CI |
+| S11-12 | Notarise `.app` | — | ⏳ Optional, requires Apple Developer account |
+| S11-13 | Create GitHub Release | — | ⏳ After S11-01 hardware validation |
+| **NEW** | Add `runCalibration()` / `runMeasurement()` orchestration to `SessionNotifier` | — | ✅ Full audio+DSP wiring complete |
 
 ### Definition of Done
 

@@ -20,6 +20,19 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
   final _nameController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    // UX-04: restore type/name if user backed out of DCR Entry and returned.
+    final notifier = ref.read(sessionNotifierProvider.notifier);
+    if (notifier.accumulatedType != PickupType.unknown) {
+      _selectedType = notifier.accumulatedType;
+    }
+    if (notifier.accumulatedPickupName.isNotEmpty) {
+      _nameController.text = notifier.accumulatedPickupName;
+    }
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     super.dispose();

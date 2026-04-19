@@ -33,6 +33,8 @@ class SettingsScreen extends ConsumerWidget {
             max: 30,
             divisions: 20,
             displayValue: '${settings.sweepDurationSeconds} s',
+            minLabel: '10 s',
+            maxLabel: '30 s',
             onChanged: (v) => notifier.setSweepDuration(v.round()),
           ),
 
@@ -44,6 +46,8 @@ class SettingsScreen extends ConsumerWidget {
             max: -6,
             divisions: 12,
             displayValue: '${settings.outputLevelDbfs.toStringAsFixed(0)} dBFS',
+            minLabel: '−18 dBFS',
+            maxLabel: '−6 dBFS',
             onChanged: (v) => notifier.setOutputLevel(v),
           ),
 
@@ -190,6 +194,8 @@ class _SliderTile extends StatelessWidget {
     required this.divisions,
     required this.displayValue,
     required this.onChanged,
+    this.minLabel,
+    this.maxLabel,
   });
 
   final String label;
@@ -199,6 +205,9 @@ class _SliderTile extends StatelessWidget {
   final int divisions;
   final String displayValue;
   final ValueChanged<double> onChanged;
+  /// UX-07: Optional bound labels shown below the slider track.
+  final String? minLabel;
+  final String? maxLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -229,6 +238,26 @@ class _SliderTile extends StatelessWidget {
               divisions: divisions,
               onChanged: onChanged,
             ),
+            // UX-07: range bound labels so min/max are clearly readable.
+            if (minLabel != null || maxLabel != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      minLabel ?? '',
+                      style: const TextStyle(
+                          fontSize: 11, color: AppTheme.onSurfaceDim),
+                    ),
+                    Text(
+                      maxLabel ?? '',
+                      style: const TextStyle(
+                          fontSize: 11, color: AppTheme.onSurfaceDim),
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
       ),

@@ -77,6 +77,10 @@ class _TestSessionNotifier extends Notifier<SessionState>
   void reset() {}
   @override
   Future<void> cancelSession() async {}
+  @override
+  Future<void> runCalibration() async {}
+  @override
+  Future<void> runMeasurement() async {}
 
   @override
   PickupType get accumulatedType => PickupType.unknown;

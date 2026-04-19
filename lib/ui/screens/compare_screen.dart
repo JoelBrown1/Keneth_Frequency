@@ -67,6 +67,8 @@ class CompareScreen extends ConsumerWidget {
             const SizedBox(height: 16),
 
             // Dual-line chart.
+            // UX-10: suppress secondary resonant marker when peaks are within
+            // 200 Hz to prevent the annotation labels from overlapping.
             SizedBox(
               height: 300,
               child: FrequencyResponseChart(
@@ -75,7 +77,8 @@ class CompareScreen extends ConsumerWidget {
                 resonantFrequency: m1.resonantFrequency,
                 qFactor: m1.qFactor,
                 secondaryResponse: m2.response,
-                secondaryResonantFrequency: m2.resonantFrequency,
+                secondaryResonantFrequency:
+                    deltaHz >= 200 ? m2.resonantFrequency : null,
               ),
             ),
 

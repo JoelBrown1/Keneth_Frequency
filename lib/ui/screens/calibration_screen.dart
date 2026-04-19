@@ -11,6 +11,21 @@ import '../widgets/session_progress_bar.dart';
 class CalibrationScreen extends ConsumerWidget {
   const CalibrationScreen({super.key});
 
+  Future<void> _startCalibration(BuildContext context, WidgetRef ref) async {
+    try {
+      await ref.read(sessionNotifierProvider.notifier).runCalibration();
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Calibration failed: $e'),
+            backgroundColor: Colors.red.shade800,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final session = ref.watch(sessionNotifierProvider);
@@ -115,9 +130,7 @@ class CalibrationScreen extends ConsumerWidget {
             deviceReady: hasDevice,
             onStart: (isRunning || !hasDevice)
                 ? null
-                : () => ref
-                    .read(sessionNotifierProvider.notifier)
-                    .startCalibration(),
+                : () => _startCalibration(context, ref),
           ),
         ],
       ),

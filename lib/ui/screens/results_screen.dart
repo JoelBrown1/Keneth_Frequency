@@ -22,6 +22,15 @@ final _freqFormat = NumberFormat('#,##0.0', 'en_US');
 final _ohmsFormat = NumberFormat('#,###', 'en_US');
 final _dateFormat = DateFormat('yyyy-MM-dd HH:mm:ss');
 
+/// UX-05: Format resonant frequency as kHz when ≥ 1000 Hz.
+/// e.g. 4783 Hz → "4.78 kHz", 850 Hz → "850 Hz"
+String _heroFreqLabel(double hz) {
+  if (hz >= 1000) {
+    return '${(hz / 1000).toStringAsFixed(2)} kHz';
+  }
+  return '${hz.toStringAsFixed(0)} Hz';
+}
+
 class ResultsScreen extends ConsumerWidget {
   const ResultsScreen({super.key, this.measurementId});
 
@@ -273,7 +282,7 @@ class _ResultsBody extends StatelessWidget {
           child: Column(
             children: [
               Text(
-                '${_freqFormat.format(measurement.resonantFrequency)} Hz',
+                _heroFreqLabel(measurement.resonantFrequency),
                 key: const Key('resonant_frequency_display'),
                 style: AppTheme.measurementLarge,
               ),
@@ -296,8 +305,7 @@ class _ResultsBody extends StatelessWidget {
                 _ResultRow(
                   key: const Key('result_row_resonant_frequency'),
                   label: 'Resonant Frequency',
-                  value:
-                      '${_freqFormat.format(measurement.resonantFrequency)} Hz',
+                  value: _heroFreqLabel(measurement.resonantFrequency),
                   isHighlight: true,
                 ),
                 _ResultRow(
@@ -364,6 +372,16 @@ class _ResultsBody extends StatelessWidget {
             response: measurement.response,
             resonantFrequency: measurement.resonantFrequency,
             qFactor: measurement.qFactor,
+          ),
+        ),
+        // UX-09: interaction affordance hint below chart.
+        const Padding(
+          padding: EdgeInsets.only(top: 4),
+          child: Text(
+            'Pinch to zoom · scroll to pan',
+            key: Key('chart_zoom_hint'),
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 11, color: AppTheme.onSurfaceDim),
           ),
         ),
 

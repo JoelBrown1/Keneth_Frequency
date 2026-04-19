@@ -11,6 +11,21 @@ import '../widgets/session_progress_bar.dart';
 class MeasurementScreen extends ConsumerWidget {
   const MeasurementScreen({super.key});
 
+  Future<void> _startSweep(BuildContext context, WidgetRef ref) async {
+    try {
+      await ref.read(sessionNotifierProvider.notifier).runMeasurement();
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Measurement failed: $e'),
+            backgroundColor: Colors.red.shade800,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final session = ref.watch(sessionNotifierProvider);
@@ -96,11 +111,7 @@ class MeasurementScreen extends ConsumerWidget {
           ),
           _BottomBar(
             isRunning: isRunning,
-            onStart: isRunning
-                ? null
-                : () => ref
-                    .read(sessionNotifierProvider.notifier)
-                    .startMeasurement(),
+            onStart: isRunning ? null : () => _startSweep(context, ref),
           ),
         ],
       ),

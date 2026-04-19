@@ -10,7 +10,7 @@ String _$audioServiceHash() => r'185035d5e6aebdfbfae6028642b70c0b0c540ad9';
 
 /// Provides the singleton [AudioServiceInterface] used by [SessionNotifier].
 ///
-/// Override this in tests to inject a fake audio service.
+/// Override in tests to inject a fake audio service.
 ///
 /// Copied from [audioService].
 @ProviderFor(audioService)
@@ -24,7 +24,7 @@ final audioServiceProvider = Provider<AudioServiceInterface>.internal(
 );
 
 typedef AudioServiceRef = ProviderRef<AudioServiceInterface>;
-String _$sessionNotifierHash() => r'85335455c509a699d46d4469bdd906ace7b8b8ad';
+String _$sessionNotifierHash() => r'9e05f8a7b2f060b5caea04df2f46961616c11551';
 
 /// Manages the measurement session FSM.
 ///
