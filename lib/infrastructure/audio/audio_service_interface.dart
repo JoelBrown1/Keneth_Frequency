@@ -31,8 +31,19 @@ abstract class AudioServiceInterface {
     int inputChannel,
   );
 
-  /// Broadcasts the linear RMS amplitude (0–1) once per 4096-sample tap buffer
-  /// during an active [playSweepAndRecord] call.
+  /// Installs a continuous input tap on the open session and starts streaming
+  /// RMS values via [levelStream]. Call after [openSession] succeeds.
+  ///
+  /// No-op if monitoring is already active. Throws if no session is open.
+  Future<void> startMonitoring();
+
+  /// Removes the continuous input tap installed by [startMonitoring].
+  ///
+  /// Must be called before [playSweepAndRecord] (which installs its own tap).
+  Future<void> stopMonitoring();
+
+  /// Broadcasts the linear RMS amplitude (0–1) once per 4096-sample tap buffer.
+  /// Active during [startMonitoring] and during [playSweepAndRecord].
   ///
   /// Wraps the `keneth_frequency/level` EventChannel.
   Stream<double> get levelStream;

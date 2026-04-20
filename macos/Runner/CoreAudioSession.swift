@@ -10,6 +10,7 @@ enum AudioError: Error {
 
 class CoreAudioSession {
   private(set) var engine: AVAudioEngine?
+  private(set) var isMonitoring = false
 
   // MARK: - Device enumeration
 
@@ -89,6 +90,7 @@ class CoreAudioSession {
   }
 
   func close() {
+    isMonitoring = false
     if let eng = engine {
       if eng.isRunning {
         try? eng.inputNode.removeTap(onBus: 0)
@@ -96,6 +98,48 @@ class CoreAudioSession {
       }
     }
     engine = nil
+  }
+
+  // MARK: - Continuous level monitoring
+
+  /// Installs a persistent tap on the input node and starts the engine.
+  /// Streams linear RMS values to [onRms] once per 4096-sample buffer.
+  /// No-op if already monitoring.
+  func startMonitoring(onRms: @escaping (Double) -> Void) throws {
+    print("[KF] CoreAudioSession.startMonitoring: engine=\(engine != nil), isRunning=\(engine?.isRunning ?? false), isMonitoring=\(isMonitoring)")
+    guard let eng = engine else { throw AudioError.noSession }
+    guard !isMonitoring else { print("[KF] already monitoring"); return }
+
+    let format = eng.inputNode.outputFormat(forBus: 0)
+    eng.inputNode.installTap(onBus: 0, bufferSize: 4096, format: format) { buffer, _ in
+      guard let data = buffer.floatChannelData?[0] else { return }
+      let count = Int(buffer.frameLength)
+      guard count > 0 else { return }
+      var sumSq: Float = 0
+      for i in 0..<count { sumSq += data[i] * data[i] }
+      onRms(Double(sqrt(sumSq / Float(count))))
+    }
+
+    if !eng.isRunning {
+      do {
+        try eng.start()
+        print("[KF] CoreAudioSession.startMonitoring: engine started")
+      } catch {
+        eng.inputNode.removeTap(onBus: 0)
+        throw AudioError.engineStart(error)
+      }
+    } else {
+      print("[KF] CoreAudioSession.startMonitoring: engine was already running")
+    }
+    isMonitoring = true
+    print("[KF] CoreAudioSession.startMonitoring: tap installed, monitoring active")
+  }
+
+  /// Removes the monitoring tap. Must be called before [playSweepAndRecord].
+  func stopMonitoring() {
+    guard isMonitoring else { return }
+    engine?.inputNode.removeTap(onBus: 0)
+    isMonitoring = false
   }
 
   // MARK: - Sweep and record
@@ -116,6 +160,9 @@ class CoreAudioSession {
     onRms: ((Double) -> Void)? = nil
   ) async throws -> [Float] {
     guard let eng = engine else { throw AudioError.noSession }
+
+    // Remove any persistent monitoring tap before installing the recording tap.
+    stopMonitoring()
 
     let sampleRate = eng.outputNode.outputFormat(forBus: 0).sampleRate
     guard sampleRate > 0 else { throw AudioError.noSession }
@@ -188,6 +235,7 @@ class CoreAudioSession {
 
     eng.inputNode.removeTap(onBus: 0)
     playerNode.stop()
+    eng.stop()
     eng.detach(playerNode)
 
     return tapQueue.sync { recordedSamples }

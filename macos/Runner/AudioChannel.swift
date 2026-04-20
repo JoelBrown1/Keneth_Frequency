@@ -59,6 +59,11 @@ class AudioChannel {
       result(nil)
     case "playSweepAndRecord":
       handlePlaySweepAndRecord(call: call, result: result)
+    case "startMonitoring":
+      handleStartMonitoring(result: result)
+    case "stopMonitoring":
+      session.stopMonitoring()
+      result(nil)
     default:
       result(FlutterMethodNotImplemented)
     }
@@ -78,6 +83,28 @@ class AudioChannel {
     result(session.open(deviceId: deviceId, sampleRate: sampleRate))
   }
 
+  private func handleStartMonitoring(result: @escaping FlutterResult) {
+    print("[KF] handleStartMonitoring: engine=\(session.engine != nil), isMonitoring=\(session.isMonitoring), sink=\(levelHandler.sink != nil)")
+    do {
+      try session.startMonitoring(onRms: { [weak self] rms in
+        DispatchQueue.main.async {
+          guard let self = self else { return }
+          if self.levelHandler.sink == nil {
+            print("[KF] tap fired but sink is nil — EventChannel not subscribed yet")
+          }
+          self.levelHandler.sink?(rms)
+        }
+      })
+      print("[KF] handleStartMonitoring: succeeded")
+      result(nil)
+    } catch {
+      print("[KF] handleStartMonitoring: FAILED — \(error)")
+      result(FlutterError(code: "AUDIO_ERROR",
+                          message: error.localizedDescription,
+                          details: nil))
+    }
+  }
+
   private func handlePlaySweepAndRecord(call: FlutterMethodCall, result: @escaping FlutterResult) {
     guard let args = call.arguments as? [String: Any],
           let sweepData = args["sweep"] as? FlutterStandardTypedData,
@@ -94,16 +121,13 @@ class AudioChannel {
       Array(ptr.bindMemory(to: Float.self))
     }
 
-    // Capture sink reference before entering the Task.
-    let sink = levelHandler.sink
-
-    Task {
+    Task { [weak self] in
       do {
         let recording = try await session.playSweepAndRecord(
           sweepSamples: sweepFloats,
           outputChannel: outCh,
           inputChannel: inCh,
-          onRms: { rms in sink?(rms) }
+          onRms: { rms in DispatchQueue.main.async { self?.levelHandler.sink?(rms) } }
         )
         // Encode [Float] → Data → FlutterStandardTypedData(float32:)
         let data = recording.withUnsafeBufferPointer { ptr in
@@ -128,11 +152,13 @@ private class LevelStreamHandler: NSObject, FlutterStreamHandler {
 
   func onListen(withArguments arguments: Any?,
                 eventSink events: @escaping FlutterEventSink) -> FlutterError? {
+    print("[KF] LevelStreamHandler: onListen — sink is now set")
     sink = events
     return nil
   }
 
   func onCancel(withArguments arguments: Any?) -> FlutterError? {
+    print("[KF] LevelStreamHandler: onCancel — sink cleared")
     sink = nil
     return nil
   }

@@ -70,6 +70,14 @@ class MacosAudioService implements AudioServiceInterface {
     return result as Float32List;
   }
 
+  // ── startMonitoring / stopMonitoring ─────────────────────────────────────────
+
+  @override
+  Future<void> startMonitoring() => _channel.invokeMethod<void>('startMonitoring');
+
+  @override
+  Future<void> stopMonitoring() => _channel.invokeMethod<void>('stopMonitoring');
+
   // ── levelStream ──────────────────────────────────────────────────────────────
 
   @override

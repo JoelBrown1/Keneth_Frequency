@@ -100,6 +100,10 @@ class SessionNotifier extends _$SessionNotifier {
   /// Results → Idle (without saving).
   void reset() => _resetAccumulator();
 
+  /// Results → MeasuringState so the user can adjust gain and re-sweep
+  /// without redoing calibration.
+  void discardAndRemeasure() => state = const MeasuringState(progress: 0);
+
   // ── Cancel (H-03) ────────────────────────────────────────────────────────
 
   /// Closes the audio session and resets the FSM to [IdleState] from any state.
@@ -188,6 +192,38 @@ class SessionNotifier extends _$SessionNotifier {
   /// 6. Transitions to [ResultsState] with DSP warning flags.
   ///
   /// On error, resets progress to 0 so the user can retry.
+  /// Opens a session on the Scarlett and starts the continuous level tap so the
+  /// user can see real-time input level before starting the sweep.
+  ///
+  /// Best-effort — never throws. Errors are silently ignored so a missing device
+  /// does not block the UI (the device banner on [CalibrationScreen] handles that).
+  Future<void> startLevelMonitoring() async {
+    final audio = ref.read(audioServiceProvider);
+    const sampleRate = 48000;
+    try {
+      // Prefer reusing the existing engine (left stopped after calibration).
+      print('[KF] startLevelMonitoring: trying startMonitoring() on existing engine');
+      await audio.startMonitoring();
+      print('[KF] startLevelMonitoring: startMonitoring() succeeded (reused engine)');
+    } catch (e) {
+      print('[KF] startLevelMonitoring: reuse failed ($e) — opening new session');
+      try {
+        final devices = await audio.getDevices();
+        print('[KF] startLevelMonitoring: found ${devices.length} devices, Scarlett: ${devices.where((d) => d.isScarlett).map((d) => d.name).join(", ")}');
+        final device = devices.firstWhere(
+          (d) => d.isScarlett,
+          orElse: () => throw Exception('No Scarlett device found'),
+        );
+        final openResult = await audio.openSession(device.id, sampleRate.toDouble());
+        print('[KF] startLevelMonitoring: openSession returned: $openResult');
+        await audio.startMonitoring();
+        print('[KF] startLevelMonitoring: startMonitoring() succeeded (new session)');
+      } catch (e) {
+        print('[KF] startLevelMonitoring: FAILED — $e');
+      }
+    }
+  }
+
   Future<void> runMeasurement() async {
     final audio = ref.read(audioServiceProvider);
     final settings = ref.read(settingsNotifierProvider);
@@ -197,6 +233,9 @@ class SessionNotifier extends _$SessionNotifier {
 
     state = const MeasuringState(progress: 0.0);
     try {
+      // 0. Stop any active monitoring tap before installing the recording tap.
+      await audio.stopMonitoring();
+
       // 1. Generate sweep.
       final sweep = const SweepGenerator().generateLogChirp(
         f1: settings.sweepLowFrequencyHz,
@@ -237,6 +276,31 @@ class SessionNotifier extends _$SessionNotifier {
       );
       final noPeak = peak == null;
       final fRes = peak?.frequency ?? 0.0;
+
+      // Debug: log DSP results to console.
+      print('[KF] DSP: totalPoints=${dspOutput.displayResponse.points.length}'
+          ' clip=${dspOutput.clipWarning} snr=${dspOutput.snrDb.toStringAsFixed(1)} dB');
+      // Log top-5 points by magnitude (unconstrained — see what DSP really found).
+      final allPts = List.of(dspOutput.displayResponse.points)
+        ..sort((a, b) => b.magnitude.compareTo(a.magnitude));
+      print('[KF] DSP: top-5 peaks (unconstrained):');
+      for (final p in allPts.take(5)) {
+        print('[KF]   ${p.frequency.toStringAsFixed(0)} Hz  '
+            '${p.magnitude.toStringAsFixed(2)} dB');
+      }
+      // Log the full response around 4 kHz (3500–4500 Hz) to see the shape.
+      final nearFloor = dspOutput.displayResponse.points
+          .where((p) => p.frequency >= 3500 && p.frequency <= 4500)
+          .toList()
+        ..sort((a, b) => a.frequency.compareTo(b.frequency));
+      print('[KF] DSP: points 3500–4500 Hz (${nearFloor.length} pts):');
+      for (final p in nearFloor) {
+        print('[KF]   ${p.frequency.toStringAsFixed(0)} Hz  '
+            '${p.magnitude.toStringAsFixed(2)} dB');
+      }
+      print('[KF] DSP: type-constrained peak => '
+          '${peak == null ? "null (noPeak)" : "${fRes.toStringAsFixed(0)} Hz  "
+              "${peak.amplitudeDb.toStringAsFixed(2)} dB  Q=${peak.qFactor.toStringAsFixed(2)}"}');
 
       // 5. Derive LC values using midpoint inductance from reference data.
       final profile = PickupReferenceData.forType(_type);

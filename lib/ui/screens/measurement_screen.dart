@@ -8,10 +8,24 @@ import '../theme/app_theme.dart';
 import '../widgets/level_meter.dart';
 import '../widgets/session_progress_bar.dart';
 
-class MeasurementScreen extends ConsumerWidget {
+class MeasurementScreen extends ConsumerStatefulWidget {
   const MeasurementScreen({super.key});
 
-  Future<void> _startSweep(BuildContext context, WidgetRef ref) async {
+  @override
+  ConsumerState<MeasurementScreen> createState() => _MeasurementScreenState();
+}
+
+class _MeasurementScreenState extends ConsumerState<MeasurementScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Start continuous level monitoring so the meter is live before the sweep.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(sessionNotifierProvider.notifier).startLevelMonitoring();
+    });
+  }
+
+  Future<void> _startSweep(BuildContext context) async {
     try {
       await ref.read(sessionNotifierProvider.notifier).runMeasurement();
     } catch (e) {
@@ -27,13 +41,14 @@ class MeasurementScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final session = ref.watch(sessionNotifierProvider);
     final progress = session is MeasuringState ? session.progress : 0.0;
     final isRunning = progress > 0;
 
     final levelAsync = ref.watch(levelStreamProvider);
     final level = levelAsync.asData?.value ?? 0.0;
+
 
     return Scaffold(
       appBar: AppBar(
@@ -111,7 +126,7 @@ class MeasurementScreen extends ConsumerWidget {
           ),
           _BottomBar(
             isRunning: isRunning,
-            onStart: isRunning ? null : () => _startSweep(context, ref),
+            onStart: isRunning ? null : () => _startSweep(context),
           ),
         ],
       ),

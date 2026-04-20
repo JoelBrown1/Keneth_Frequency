@@ -38,6 +38,9 @@ class _FakeAudioService implements AudioServiceInterface {
 
   @override
   Stream<double> get levelStream => const Stream.empty();
+
+  @override Future<void> startMonitoring() async {}
+  @override Future<void> stopMonitoring() async {}
 }
 
 // ── Test session notifier ─────────────────────────────────────────────────────
@@ -75,12 +78,15 @@ class _TestSessionNotifier extends Notifier<SessionState>
   void saveResult() {}
   @override
   void reset() {}
+  @override void discardAndRemeasure() {}
   @override
   Future<void> cancelSession() async {}
   @override
   Future<void> runCalibration() async {}
   @override
   Future<void> runMeasurement() async {}
+  @override
+  Future<void> startLevelMonitoring() async {}
 
   @override
   PickupType get accumulatedType => PickupType.unknown;

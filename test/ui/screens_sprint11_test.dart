@@ -50,6 +50,8 @@ class _FakeAudio implements AudioServiceInterface {
   @override Future<Float32List> playSweepAndRecord(
     Float32List sweep, int out, int inp) async => Float32List(4096);
   @override Stream<double> get levelStream => Stream.value(0.0);
+  @override Future<void> startMonitoring() async {}
+  @override Future<void> stopMonitoring() async {}
 }
 
 // ── Tracking fake audio service ───────────────────────────────────────────────
@@ -84,9 +86,11 @@ class _FixedSession extends Notifier<SessionState> implements SessionNotifier {
   @override void measurementComplete(PickupMeasurement m) {}
   @override void saveResult() {}
   @override void reset() {}
+  @override void discardAndRemeasure() {}
   @override Future<void> cancelSession() async {}
   @override Future<void> runCalibration() async {}
   @override Future<void> runMeasurement() async {}
+  @override Future<void> startLevelMonitoring() async {}
   @override PickupType get accumulatedType => PickupType.humbuckerMediumOutput;
   @override String get accumulatedPickupName => 'SH-4 Bridge';
   @override double get accumulatedDcr => 16500;

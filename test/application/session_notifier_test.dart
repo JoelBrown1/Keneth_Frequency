@@ -32,6 +32,9 @@ class _FakeAudioService implements AudioServiceInterface {
 
   @override
   Stream<double> get levelStream => const Stream.empty();
+
+  @override Future<void> startMonitoring() async {}
+  @override Future<void> stopMonitoring() async {}
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

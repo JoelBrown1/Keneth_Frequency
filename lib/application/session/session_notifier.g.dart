@@ -24,7 +24,7 @@ final audioServiceProvider = Provider<AudioServiceInterface>.internal(
 );
 
 typedef AudioServiceRef = ProviderRef<AudioServiceInterface>;
-String _$sessionNotifierHash() => r'9e05f8a7b2f060b5caea04df2f46961616c11551';
+String _$sessionNotifierHash() => r'0a6b005caacfa3ab16d1e80927e4ff426efb107e';
 
 /// Manages the measurement session FSM.
 ///

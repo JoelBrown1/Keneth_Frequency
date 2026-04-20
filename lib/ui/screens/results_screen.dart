@@ -64,6 +64,9 @@ class ResultsScreen extends ConsumerWidget {
         ref.read(sessionNotifierProvider.notifier).saveResult();
       },
       onDiscard: () {
+        ref.read(sessionNotifierProvider.notifier).discardAndRemeasure();
+      },
+      onBack: () {
         ref.read(sessionNotifierProvider.notifier).reset();
       },
     );
@@ -114,6 +117,7 @@ class _ResultsView extends StatelessWidget {
     this.noPeakDetected = false,
     this.onSave,
     this.onDiscard,
+    this.onBack,
   });
 
   final PickupMeasurement measurement;
@@ -123,6 +127,7 @@ class _ResultsView extends StatelessWidget {
   final bool noPeakDetected;
   final VoidCallback? onSave;
   final VoidCallback? onDiscard;
+  final VoidCallback? onBack;
 
   @override
   Widget build(BuildContext context) {
@@ -132,6 +137,9 @@ class _ResultsView extends StatelessWidget {
             ? measurement.pickupName
             : 'Results'),
         automaticallyImplyLeading: !isSession,
+        leading: isSession
+            ? _BackButton(onBack: onBack)
+            : null,
         actions: [
           _ExportButton(measurement: measurement),
         ],
@@ -581,6 +589,48 @@ class _ResultRow extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+// ── Back button (session mode) ────────────────────────────────────────────────
+
+class _BackButton extends StatelessWidget {
+  const _BackButton({required this.onBack});
+
+  final VoidCallback? onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.arrow_back),
+      tooltip: 'Back to Home',
+      onPressed: () => _confirmBack(context),
+    );
+  }
+
+  Future<void> _confirmBack(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Leave without saving?'),
+        content: const Text(
+            'The measurement result will be discarded. Save it first if you want to keep it.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.error,
+            ),
+            child: const Text('Leave'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) onBack?.call();
   }
 }
 
